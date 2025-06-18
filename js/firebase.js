@@ -18,45 +18,21 @@ const app = initializeApp(firebaseConfig);
 // Obtiene la referencia a la base de datos en tiempo real
 const db = getDatabase(app);
 
-/**
- * Guarda un voto en la colección 'votes' de la base de datos.
- * @param {string} productID - ID del producto votado.
- * @returns {Promise<{success: boolean, message: string}>}
- */
-export function saveVote(productID) {
-  const votesRef = ref(db, 'votes');
-  const newVoteRef = push(votesRef);
-  const data = {
-    productID,
-    createdAt: new Date().toISOString()
-  };
-
-  return set(newVoteRef, data)
-    .then(() => ({
-      success: true,
-      message: 'Voto guardado correctamente.'
-    }))
-    .catch((error) => ({
-      success: false,
-      message: `Error al guardar el voto: ${error.message}`
-    }));
+function saveVote(data) {
+  const votesCollectionRef = ref(db, 'votes');
+  const newUserRef = push(votesCollectionRef);
+  return set(newUserRef, {
+    user: data.userInput,
+    email: data.email,
+    message: data.message,
+    date: new Date().toISOString()
+  })
+    .then(() => {
+      return { success: true, message: 'Voto guardado correctamente.' };
+    })
+    .catch((error) => {
+      return { success: false, message: 'Error al guardar el voto.', error };
+    });
 }
 
-/**
- * Obtiene todos los votos de la colección 'votes' de la base de datos.
- * @returns {Promise<any>} Los votos almacenados o un objeto de error.
- */
-export async function getVotes() {
-  const votesRef = ref(db, 'votes');
-  try {
-    const snapshot = await get(votesRef);
-    if (snapshot.exists()) {
-      return snapshot.val();
-    } else {
-      return {};
-    }
-  } catch (error) {
-    return { error: true, message: `Error al obtener los votos: ${error.message}` };
-  }
-}
-
+export { saveVote};
